@@ -23,18 +23,22 @@ def validate_json(schema, clean=False, status_code=400):
 
     def vd(f):
         @wraps(f)
-        def wrapper(request, *args, **kwargs):
+        async def wrapper(request, *args, **kwargs):
 
             if inspect.isclass(request) and issubclass(request, BaseHTTPResponse):
+                if inspect.isawaitable(request):
+                    return await request
                 return request
 
             if request.json is None:
                 return _request_body_not_json_response()
+
             validation_passed = validator.validate(request.json or {})
             if validation_passed:
                 if clean:
                     kwargs['valid_json'] = validator.document
-                return f(request, *args, **kwargs)
+
+                return await f(request, *args, **kwargs)
             else:
                 return _validation_failed_response(
                     validator,
