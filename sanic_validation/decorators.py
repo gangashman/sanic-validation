@@ -1,6 +1,7 @@
 from sanic.response import json, BaseHTTPResponse
 from cerberus import Validator
 from functools import wraps
+import inspect
 
 JSON_DATA_ENTRY_TYPE = 'json_data_property'
 QUERY_ARG_ENTRY_TYPE = 'query_argument'
@@ -24,7 +25,7 @@ def validate_json(schema, clean=False, status_code=400):
         @wraps(f)
         def wrapper(request, *args, **kwargs):
 
-            if issubclass(BaseHTTPResponse, res):
+            if inspect.isclass(request) and issubclass(request, BaseHTTPResponse):
                 return request
 
             if request.json is None:
