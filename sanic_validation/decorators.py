@@ -1,4 +1,4 @@
-from sanic.response import json
+from sanic.response import json, BaseHTTPResponse
 from cerberus import Validator
 from functools import wraps
 
@@ -23,6 +23,10 @@ def validate_json(schema, clean=False, status_code=400):
     def vd(f):
         @wraps(f)
         def wrapper(request, *args, **kwargs):
+
+            if issubclass(request, BaseHTTPResponse):
+                return request
+
             if request.json is None:
                 return _request_body_not_json_response()
             validation_passed = validator.validate(request.json or {})
@@ -31,9 +35,11 @@ def validate_json(schema, clean=False, status_code=400):
                     kwargs['valid_json'] = validator.document
                 return f(request, *args, **kwargs)
             else:
-                return _validation_failed_response(validator,
-                                                   JSON_DATA_ENTRY_TYPE,
-                                                   status_code)
+                return _validation_failed_response(
+                    validator,
+                    JSON_DATA_ENTRY_TYPE,
+                    status_code
+                )
 
         return wrapper
 
