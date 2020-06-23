@@ -24,7 +24,7 @@ def validate_json(schema, clean=False, status_code=400):
         @wraps(f)
         def wrapper(request, *args, **kwargs):
 
-            if issubclass(request, BaseHTTPResponse):
+            if issubclass(BaseHTTPResponse, res):
                 return request
 
             if request.json is None:
